@@ -18,14 +18,14 @@ import {
   InfoOptions,
   QualityOptions,
   TypeOptions,
-  VideoFormat,
+  VideoFormat
 } from './types';
 import { createArgs } from './utils/args';
 import { extractThumbnails } from './utils/thumbnails';
 import {
   getContentType,
   getFileExtension,
-  parseFormatOptions,
+  parseFormatOptions
 } from './utils/format';
 import { PROGRESS_STRING, stringToProgress } from './utils/progress';
 import { PassThrough } from 'stream';
@@ -38,11 +38,13 @@ export const BIN_DIR = path.join(__dirname, '..', 'bin');
 export class YtDlp {
   private readonly binaryPath: string;
   private readonly ffmpegPath?: string;
+  private readonly proxyUrl?: string;
 
   // done
   constructor(opt?: YtDlpOptions) {
     this.binaryPath = opt?.binaryPath || findYtdlpBinary() || '';
     this.ffmpegPath = opt?.ffmpegPath || findFFmpegBinary();
+    this.proxyUrl = opt?.proxy;
 
     if (!this.binaryPath || !fs.existsSync(this.binaryPath)) {
       console.error(
@@ -120,7 +122,7 @@ export class YtDlp {
     }
 
     const binaryResult = spawnSync(this.binaryPath, ['--version'], {
-      stdio: 'ignore',
+      stdio: 'ignore'
     });
     const ffmpegResult = options?.ffmpeg
       ? spawnSync(this.ffmpegPath!, ['-version'], { stdio: 'ignore' })
@@ -211,7 +213,7 @@ export class YtDlp {
         if (code === 0) {
           resolve(stdoutData);
         } else {
-          reject(new Error(`yt-dlp exited with code ${code}: ${stderrData}`));
+          reject(new Error(`yt-dlp exited with code ${code}: ${stderrData},args: ${args.join(' ')}`));
         }
       });
 
@@ -228,6 +230,9 @@ export class YtDlp {
     isProgress?: boolean,
     extra?: string[]
   ): string[] {
+    // if (this.proxyUrl) {
+    //   opt.proxy = this.proxyUrl;
+    // }
     const args = createArgs(opt);
     if (this.ffmpegPath) {
       args.push('--ffmpeg-location', this.ffmpegPath);
@@ -286,7 +291,7 @@ export class YtDlp {
     const args = this.buildArgs(url, opt, !!onProgress, [
       ...parseFormatOptions(format),
       '-o',
-      '-',
+      '-'
     ]);
 
     const passThrough = new PassThrough();
@@ -315,7 +320,7 @@ export class YtDlp {
           destination.on('finish', () => resolve(pt));
           destination.on('error', reject);
         });
-      },
+      }
     };
   }
 
@@ -327,8 +332,8 @@ export class YtDlp {
     const args = [
       '--dump-single-json',
       '--quiet',
-      ...createArgs({ flatPlaylist: true, ...options }),
-      url,
+      ...createArgs({ flatPlaylist: true, proxy: this.proxyUrl, ...options }),
+      url
     ];
     const execResult = await this._executeAsync(args);
     return JSON.parse(execResult);
@@ -342,7 +347,7 @@ export class YtDlp {
       '--print',
       'playlist:thumbnails_table',
       '--quiet',
-      url,
+      url
     ];
     const execResult = await this._executeAsync(args);
     return extractThumbnails(execResult);
@@ -377,7 +382,7 @@ export class YtDlp {
     const args = this.buildArgs(url, opt, !!onProgress, [
       ...parseFormatOptions(format),
       '-o',
-      '-',
+      '-'
     ]);
 
     await this._executeAsync(
@@ -399,10 +404,10 @@ export class YtDlp {
       name: filename || `${info.title}.${getFileExtension(format)}`,
       type: getContentType(format),
       size: blob.size,
-      ...metadata,
+      ...metadata
     };
     return new File([Buffer.concat(chunks)], defaultMetadata.name, {
-      type: defaultMetadata.type,
+      type: defaultMetadata.type
     });
   }
 
@@ -410,10 +415,10 @@ export class YtDlp {
     const args = [
       '--print', 'urls',
       ...createArgs({ flatPlaylist: true, ...options }),
-      url,
+      url
     ];
     const execResult = await this._executeAsync(args);
-    return String(execResult).split('\n')
+    return String(execResult).split('\n');
   }
 }
 
@@ -430,7 +435,7 @@ export const helpers = {
   downloadFile,
   BIN_DIR,
   downloadYtDlp,
-  findYtdlpBinary,
+  findYtdlpBinary
 };
 
 export type {
@@ -443,5 +448,5 @@ export type {
   PlaylistInfo,
   QualityOptions,
   TypeOptions,
-  VideoFormat,
+  VideoFormat
 };

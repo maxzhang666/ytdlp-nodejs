@@ -340,6 +340,7 @@ export interface ArgsOptions {
 export interface YtDlpOptions {
   binaryPath?: string;
   ffmpegPath?: string;
+  proxy?: string;
 }
 
 export interface VideoInfo {
@@ -535,10 +536,10 @@ export interface FormatOptions<F extends FormatKeyWord>
   extends Omit<ArgsOptions, 'format' | 'progressTemplate'> {
   format?:
     | {
-        filter: F;
-        quality?: QualityOptions[F];
-        type?: TypeOptions[F];
-      }
+    filter: F;
+    quality?: QualityOptions[F];
+    type?: TypeOptions[F];
+  }
     | string;
   onProgress?: (p: VideoProgress) => void;
 }

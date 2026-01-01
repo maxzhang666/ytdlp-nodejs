@@ -4,3 +4,5 @@ dist
 output
 .tsup
 src/bin
+.idea
+pnpm-lock.yaml
